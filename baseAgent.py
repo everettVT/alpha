@@ -11,18 +11,18 @@ import pyarrow as pa
 import daft
 import ray
 
-from maf.core.schema.base import CustomModel
-from maf.core.components.models import BaseEmbeddingModel, BaseLanguageModel
-from maf.core.components.tools import BaseTool
+from base import DomainObject
+from models import LLM
+from tools import Tool
 
 
 @ray.remote()
 class BaseAgent(CustomModel):
     def __init__(
             self,
-            name: Optional[str] = Field(default_factory=RandomName(1))
-            model: Optional[BaseLanguageModel] = "*"
-            
+            name: Optional[str] = Field(..., description="")
+            model: Optional[LLM] = Field(...,
+            tools: Optional[Tool] = Field(..., 
             embedding: Optional[]
             reasoning: Optional[]
             memory: Optional[List[BasePipeline]]
