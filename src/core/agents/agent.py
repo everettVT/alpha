@@ -13,7 +13,7 @@ import ray
 
 from base import DomainObject
 from models import LLM
-from tools import Tool
+from tool import Tool
 
 
 @ray.remote()
