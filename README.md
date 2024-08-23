@@ -1,7 +1,6 @@
 # alpha
 
 ### A simple agentic business automation tool. 
-@Nicolas
 #!NOTE: I think we should structure the introduction of the project as a pitch, and then have explanations and usage patterns underneath.
 
 
