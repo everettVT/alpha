@@ -18,6 +18,7 @@ class Prompt(DomainObject):
         **kwargs
             ):
         super().__init__(, *args, **kwargs)
+
         self.contents = contents
         self.system_prompt = system_prompt
         self.max_tokens = max_tokens
