@@ -7,6 +7,8 @@ import asyncio
 from tranformers import pipeline
 from openai import OpenAI, AsyncOpenAI
 import mlflow
+from starlette import Request, Response
+
 
 
 from src.schema import Prompt, DomainObject, DomainObjectError
@@ -56,39 +58,24 @@ class LLM(DomainObject):
             self.client = OpenAI(host=HOST, api_key=API_KEY)
 
 
-
-        generator = pipeline(
-            "text-generation",
-            model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        )
-
-    async def __async_call__(self, prompt: Prompt):
+    async def __async_call__(self, request: Request) -> Response:
         """Chat with the model"""
         self.prompt = prompt
 
         prompt.system_prompt
 
-
-
+#TODO: Figure out how to
+#TODO: Add support for other models
         await self.client.chat.completions.create(
             model=self.model_name,
             messages=self.history,
-            temperature= prompt.temperature,
             max_tokens= prompt.max_tokens,
+            max_length= prompt.max_length,
+            temperature=prompt.temperature,
+            top_k=prompt.top_k,
             top_p= prompt.top_p,
-            frequency_penalty= prompt.frequency_penalty,
-            presence_penalty= prompt.presence_penalty,
-
-        max_tokens: Optional[int] = None,
-        max_length: Optional[int] = None,
-        temperature: Optional[float] = None,
-        top_k: Optional[float] = None,
-        top_p: Optional[float] = None,
-        seed: Optional[int] = None,
-        stop_token: Optional[str] = None,
-            top_p=
-            max_tokens=
-
+            seed=prompt.seed,
+            stop_token=prompt.stop_token,
             response_model=request.response_model,
             stream=request.stream,
             messages=[
