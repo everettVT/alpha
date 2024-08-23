@@ -99,3 +99,4 @@ class DomainObject(BaseModel):
     def create_new(cls, **data) -> 'DomainObject':
         """Create a new instance with a fresh ULID and current timestamp."""
         return cls(id=ulid.new().str, updated_at=datetime.now(datetime.timezone.utc), **data)
+

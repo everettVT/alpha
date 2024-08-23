@@ -1,9 +1,10 @@
 from base import DomainObject, DomainObjectError
-from prompt import prompt
+from prompt import Prompt
+
 
 
 __all__ = [
     'DomainObject',
     'DomainObjectError',
-    'prompt',
+    'Prompt',
 ]
