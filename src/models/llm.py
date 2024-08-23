@@ -1,134 +1,74 @@
-from pydantic import BaseModel
-import instructor
-import functools
+from typing import List, Optional
+from pydantic import Field
+from dotenv import load_dotenv
+import os
 
-# Model Providers
-import vertexai.generative_models as vertexai_models
-import vertexai
+from tranformers import pipeline
 from openai import OpenAI, AsyncOpenAI
-import anthropic
-import transformers
+import mlflow
 
 
-import vllm
+from src.schema import Prompt, DomainObject, DomainObjectError,
 
+load_dotenv()
 
-
-
-
-vertexai.init()
-
-
-# Vertex AI 
-vertexai.generative_models.GenerativeModel("gemini-1.5-pro-preview-0409")
-vertexai_client = instructor.from_vertexai(client)
-openai_client = instructor.from_openai(openai.OpenAI())
-
-async_openai_client = instructor.from_openai(AsyncOpenAI())
-
-
-client = instructor.from_openai(
-    client=OpenAI(),
-    mode=instructor.Mode.TOOLS,
-)
-
-await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserDetail,
-        stream=True,
+await self.client.chat.completions.create(
+        model=self.model_name,
+        response_model=request.response_model,
+        stream=request.stream,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
         ],
     )
 
-
-
-import openai
-import instructor
-from typing import Iterable
-from pydantic import BaseModel, Field, ConfigDict
-
-client = instructor.from_openai(openai.OpenAI())
-
-
-class SyntheticQA(BaseModel):
-    question: str
-    answer: str
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"question": "What is the capital of France?", "answer": "Paris"},
-                {
-                    "question": "What is the largest planet in our solar system?",
-                    "answer": "Jupiter",
-                },
-                {
-                    "question": "Who wrote 'To Kill a Mockingbird'?",
-                    "answer": "Harper Lee",
-                },
-                {
-                    "question": "What element does 'O' represent on the periodic table?",
-                    "answer": "Oxygen",
-                },
-            ]
-        }
-    )
-
-
-def get_synthetic_data() -> Iterable[SyntheticQA]:
-    return client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "Generate synthetic examples"},
-            {
-                "role": "user",
-                "content": "Generate the exact examples you see in the examples of this prompt. ",
-            },
-        ],
-        response_model=Iterable[SyntheticQA],
-    ) 
-
-class BaseLanguageModel(BaseModel):
-    """Base Text Language Model that defines the interface for all language models"""
+class LLM(DomainObject):
+    """Base Multimodal Language Model that defines the interface for all language models"""
 
     def __init__(
         self,
-        model_name: Optional[str] = None,
-        system_prompt: Optional[str] = None,
-        max_tokens: Optional[int] = None,
-        max_length: Optional[int] = None,
-        temperature: Optional[float] = None,
-        top_k: Optional[float] = None,
-        top_p: Optional[float] = None,
-        seed: Optional[int] = None,
-        stop_token: Optional[str] = None,
-    ):
+        model_name: Optional[str] = Field(default="openai/gpt4o-mini", description="Name of the model in the form of a HuggingFace model name"),
+        prompt: Optional[Prompt] = None,
+        history: Optional[List[str]] = Field(default=[], description="History of messages"),
+        stream: Optional[bool] = Field(default=False, description="Whether to stream the output")
+        ):
         self.model_name = model_name
-        self.system_prompt = system_prompt
-        self.max_tokens = max_tokens
-        self.max_length = max_length
-        self.temperature = temperature
-        self.top_k = top_k
-        self.top_p = top_p
-        self.seed = seed
-        self.stop_token = stop_token
-        
-        
-        # Attributes
-        self.history = ""
-        self.start_time = None
-        self.end_time = None
-        self.history = []
-        self.memory = {
-            "input": [],
-            "output": [],
-            "task": [],
-            "time": [],
-            "role": [],
-            "model": [],
-        }
-    
+        self.prompt = prompt
+        self.history = history
+        self.stream = stream
+
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            context.artifacts["snapshot"], padding_side="left"
+        )
+
+        config = transformers.AutoConfig.from_pretrained(
+            context.artifacts["snapshot"], trust_remote_code=True
+        )
+
+        OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+        ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+        HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY")
+        GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+        HOST = os.environ.get("HOST")
+
+
+
+        if self.stream:
+            self.client = AsyncOpenAI(host=HOST, api_key="sk-test")
+        else:
+            self.client = OpenAI(host=HOST, api_key="sk-test")
+
+
+
+        generator = pipeline(
+            "text-generation",
+            model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        )
+
+    async def __async_call__(self, request: Request):
+        """Chat with the model"""
+        self.prompt =
+        self.chat(self.prompt)
+
     @abstractmethod
     def chat(self, prompt: str, history: str = "") -> str:
         """Chat with the model"""
